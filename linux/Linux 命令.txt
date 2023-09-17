@@ -1,0 +1,185 @@
+1、目录结构
+/user/local/hello.txt  开始是根目录 
+HOME是工作目录，在 /HOME/mahaoran
+
+
+2、命令
+命令 [选项] [参数]
+
+3、ls命令
+ls  [-a -l -h] [路径]
+(1)直接用：显示当前目录
+(2)ls  -a  路径 显示所有文件
+(3)ls -l 以列表形式显示
+(4)-l -a     -la      -al
+(5)ls -lh 同时显示大小
+
+4、cd命令
+cd [路径]
+(1)cd /HOME/mahaoran
+(2)空参转回home
+(3)cd mahaoran 直接跳转mahaoran
+(4) . 当前  .. 上一级  ~ home
+
+5、pwd命令
+显示当前目录
+
+6、mkdir命令
+mkdir [-p] 【路径】 创建路径
+	eg. mkdir tools
+	      mkdir ./tools
+	      mkdir ~/tools
+
+ctrl+l清屏
+(1) 只能创建一个文件夹
+(2)mkdir -p 【路径】可创建不存在的父目录
+	eg. mkdir  tools/222/333  出了home要权限
+
+7、touch 【路径】
+创建文件
+	eg. touch ./tools/hello.txt
+
+8、cat 【路径】
+查看文件
+
+9、more 【路径】
+查看文件 空格翻页，q退出
+
+10、cp命令
+cp [-r] 【被复制的文件或文件夹】【路径】-r表示复制文件夹
+	eg. cp hello1.txt hello2.txt
+	      cp -r tools1 tools 2
+
+11、mv命令
+(1)mv 【被移动的】【目的】
+若目标不存在，则新建
+	eg.mv test.txt tools/
+	     mv wenjianjia tools/
+(2)mv 【旧名字】【新名字】 改名
+
+12、rm命令
+rm [-r -f] 【对象1 对象2 ...】
+-r表示删除文件夹
+-f表示强制删除
+
+(1)通配符*
+test* 匹配以test开头
+*test 匹配以test结尾
+*test*匹配包含test 
+
+13、grep命令
+grep [-n]【关键字】【|内容】
+匹配文本关键字 -n显示行号 -i忽略大小写
+
+14、wc命令
+wc [-c -m -l -w] 【|内容】
+统计文本
+(1)空参 ：行 单词数 字节数 文件名
+(2)-c 字节数 -m字符数 -l行数 -w单词数
+
+15、管道符 |
+左边输出作为右边输入
+
+16、which命令
+which 【命令】查找命令文件在哪里
+
+17、find命令
+find 【起始目录】【-name】【文件名】
+find 【起始目录】【-size】【正负号+大小】k M G
+
+18、echo命令
+echo 【内容】在控制台输出
+
+19、反引号` `
+将引用内容做命令输出 eg. echo `pwd`
+
+20、重定向符 >    >>
+(1) >将左侧输出内容写入覆盖右侧文件 echo "helloworld" >> test.txt
+(2) >>追加输入
+
+20、tail命令
+tail 【-f -数字】【路径】
+-数字 表示查看尾部n行的数据
+-f表示持续跟踪，Ctrl+c退出
+
+21、超级管理员
+(1)su [-] 【用户名】
+su - root进入  横杠指改变环境变量，后面指用户名
+exit退出
+
+(2)sudo 【命令】
+临时以超级用户执行
+
+22、普通用户配置超级管理员
+①进入root，或用sudo
+②sudo vim /etc/sudoers 或 sudo visudo
+③sudo命令免密码：
+在最后一行加入 mahaoran ALL=(ALL) NOPASSWD: ALL 全部免密
+		    mahaoran ALL=(ALL) NOPASSWD: 【命令文件路径】
+
+23、用户组 需要在root下执行
+(1)groupadd 组名 增加用户组
+    groupdel 组名 删除用户组
+
+(2)添加用户
+  useradd tom 	将tom加入到tom组里面，并在home下创建tom文件夹
+  useradd tom -g testgroup -d test111	将tom加入到testgroup组里面，并在home下创建test111文件夹
+
+(3)删除用户
+  userdel [-r] 【用户名】-r删除目录
+
+(4)查看用户
+  id [用户名] 不填查看所有用户
+  getent passwd 查看用户信息
+  getent group 查看组信息
+
+(5)添加已有用户到其他组
+ usermod -aG 【用户组名】【用户名】
+
+24、权限
+(1)ls -l 查看文件夹内文件的权限   ll 【文件名】 查看文件权限
+(2)权限	用户	所属用户组
+(3)第一位：[-：文件，d：文件夹，l：软链接] 
+   第二到四位：所属用户权限
+   第五到七位：所属用户组权限
+   第八到十位：其他用户权限
+ r可读 w可改 x可执行 -无
+
+25、chmod命令
+(1)chmod [-R对文件夹下所有文件应用] u=【权限符rwx-】g=【权限符】o=【权限符】 【文件名】
+(2)二进制表示：r w x
+      如7代表111，有rwx权限
+   chmod 751 test.sh
+ 只有文件所有者或root可用
+
+26、chown命令
+chown [-R] [用户] [:] [用户组] 【文件名】
+
+
+ 
+	
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+
+
+
+
+
+ 

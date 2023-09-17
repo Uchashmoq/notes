@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="js/vue.js"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- 
+            或<a :href="url">链接</a>
+            声明一个叫url的数据
+        -->
+        <a v-bind:href="url">链接</a>
+        <input type="text" v-model="url">
+        跳转到{{url}}
+        <br>
+        <input type="button" value="显示链接" v-on:click="handler()">
+
+        
+    </div>
+</body>
+<script>
+    new Vue({
+        el:"#app",
+        data:{
+            url : ""
+        },
+        methods:{
+            handler : function(){
+                alert("按钮被点击")
+            }
+        },
+        mounted(){
+            alert("挂载完成")
+        }
+    })
+</script>
+</html>
