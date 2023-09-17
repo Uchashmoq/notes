@@ -63,21 +63,21 @@ change 字段名 新名字
 ## insert
 
 ```sql
-insert into emp(name,age,gender) values ('xjp',70,1),('xmz',30,2);
+insert into emp(name,age,gender) values ('zhangsan',70,1),('lisi',30,2);
 ```
 
 ## update
 
 ```sql
 update account 
-set username='bxl' 
-where username='xjp' and passwd='8964';
+set username='zhangsan' 
+where username='lisi' and passwd='8888';
 ```
 
 ## delete
 
 ```sql
-delete from account where username='xjp';
+delete from account where username='zhangsan';
 ```
 
 # DQL
@@ -138,5 +138,35 @@ create table emp (
 ALTER TABLE emp
 ADD CONSTRAINT fk_emp_dept #外键约束名
 FOREIGN KEY (dept_id) REFERENCES department (id);
+```
+
+## 一对一
+
+任意一方加入 外键 关联另一方的 主键
+
+## 多对多
+
+创建一张中间表
+
+```sql
+create table tb_student(
+	id int unsigned auto_increment primary key '学生id主键',
+    name varchar(5) not null
+)
+
+create table tb_course(
+	id int unsigned auto_increment primary key '课程id主键',
+    course_name varchar(5) not null
+)
+
+create table tb_stu_course(
+	id int unsigned auto_increment primary key,
+    stu_id int unsigned not null,
+	course_id int unsigned not null,
+    
+    constraint fk_stu_id foreign key(stu_id) references tb_student(id),
+    constraint fk_course_id foreign key(course_id) references tb_course(id)
+)
+
 ```
 
