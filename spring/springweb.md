@@ -141,3 +141,9 @@ public class HelloPathVariable {
 2.`@Autowired`上加上`@Qualifier(bean的名字)`
 
 3.`@Autowired`换成`@Resource(bean的名字)`
+
+## RESTFUL
+
+指定请求方法
+
+`@RequestMapping(value="URL",method = RequestMethod.GET)` 或 @GetMapping("URL")
