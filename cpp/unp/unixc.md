@@ -83,26 +83,36 @@ ssize_t writen(int fd,const char* vptr,size_t n){
 #include<stdlib.h>
 
 typedef void Sigfunc(int);
-
 Sigfunc * registerSigfunc(int signo,Sigfunc *func){
-    //
+    //               新   旧
     struct sigaction act,oact;
-    //清空掩码集
+    
     sigisemptyset(&act.sa_mask);
+    //将sigint信号添加进掩码集，遇到sigint时不会中断
+    sigaddset(&act.sa_mask,SIGINT);
     act.sa_handler=func;
-    //中断系统调用,SA_RESTART
+    //不恢复系统调用
     act.sa_flags=SA_INTERRUPT;
+    
     if(sigaction(signo,&act,&oact)<0) return SIG_ERR;
-    //返回旧的handler
     return oact.sa_handler;
 }
 
 void sigtstp_func(int signo){
-    printf("\ncatch %d\n",signo);
+    printf("\nctrl+z ,catch %d\n",signo);
+    int i;
+    for(i=0;i<5;++i){
+        sleep(1);
+        puts("Z");
+    }
 }
 void sigint_func(int signo){
     printf("\nctrl+c ,catch %d\n",signo);
-    exit(0);
+    int i;
+    for(i=0;i<5;++i){
+        sleep(1);
+        puts("C");
+    }
 }
 
 int main(){
@@ -115,9 +125,10 @@ int main(){
     }
 }
 
+
 ```
 
-同名信号排队执行，不同名信号可以同时执行，如果加入掩码就排队
+同名信号排队执行，不同名信号可以打断，如果加入掩码就排队
 
 ### struct sigaction
 
@@ -158,3 +169,88 @@ struct sigaction {
 - `sigaddset(sigset_t *set, int signo)`: 将指定的信号添加到信号集中。
 - `sigdelset(sigset_t *set, int signo)`: 从信号集中移除指定的信号。
 - `sigismember(const sigset_t *set, int signo)`: 检查指定的信号是否在信号集中。
+
+### 处理SIGCHLD
+
+```c
+#include<stdio.h>
+#include<stdlib.h>
+#include<signal.h>
+#include<unistd.h>
+
+void sig_child(int signo){
+    pid_t pid;
+    int stat;
+    pid=wait(&stat);//等待任意子进程结束
+    printf("%d exit with status %d\n",pid,stat);
+}
+
+int main(){
+    //子进程结束后父进程将会收到SIGCHLD信号
+    signal(SIGCHLD,sig_child);
+    pid_t pid;
+    pid=fork();
+    if(pid==0){
+        //子进程打印循环后结束
+        printf("child pid : %d\n",getpid());
+        int i;
+        for(i=1;i<=4;++i){
+            printf("/%d/\n",i);
+            sleep(1);
+        }
+        exit(0);
+    }else{
+        int i;
+        for(i=1;i<=100;++i){
+            printf("**%d**\n",i);
+            sleep(1);
+        }
+    }
+}
+```
+
+### 恢复系统调用
+
+`慢系统调用`如accept会在信号函数返回时返回 EINTR宏，需要把 `sa_flags` 设置为`SA_RESTART`，或继续循环
+
+### wait , waitpid 函数
+
+`pid_t wait(&状态)`
+
+`pid_t wait(pid,&状态,选项)` , pid=-1等待第一个，选项 `WNOHANG`不阻塞
+
+#### 检查状态
+
+1. **`WIFEXITED(status)`：**
+   - 用于检查子进程是否正常退出。如果子进程正常结束（即没有被信号终止），`WIFEXITED(status)` 将为真。
+   - 具体而言，如果 `status` 表示子进程正常结束，`WIFEXITED(status)` 将返回一个非零值，表示子进程已经成功退出。
+2. **`WIFSIGNALED(status)`：**
+   - 用于检查子进程是否由于信号而终止。如果子进程是因为收到一个信号而结束的，`WIFSIGNALED(status)` 将为真。
+   - 具体而言，如果 `status` 表示子进程由于收到信号而终止，`WIFSIGNALED(status)` 将返回一个非零值，表示子进程是由于信号而非正常退出的。
+
+### 问题:wait只调用一次 
+
+多个子进程同时结束可能导致父进程只执行一次子进程处理函数，造成其他子进程僵死
+
+```c
+while((pid=waitpid(-1 , &stat , WNOHANG))> 0 ){
+    printf("%d terminated\n",pid);
+}
+```
+
+### 处理SIGPIPE
+
+客户端可能会收到来自服务端的RST（Reset）信号的情况有一些，其中一些典型的场景包括：
+
+1. **连接被服务端主动关闭：** 如果服务端主动关闭了连接，并且此时客户端尝试在已关闭的连接上发送数据，服务端会发送RST信号作为响应。这表明服务端不再接受来自该客户端的数据。
+2. **服务端崩溃或异常：** 如果服务端发生了崩溃或其他异常情况，操作系统可能会发送RST信号来终止与该客户端的连接。
+3. **服务端处理请求异常：** 在某些情况下，服务端可能会在处理客户端请求时发生异常，导致连接被中断，并向客户端发送RST信号。
+4. **防火墙或网络设备的干预：** 防火墙或其他网络设备可能会在网络层面上介入，导致连接被重置。这可能是由于网络故障、拦截恶意流量或其他安全策略。
+5. **超时或心跳机制：** 在一些情况下，服务端可能会设置连接超时或心跳机制，如果客户端在规定的时间内未发送或接收数据，服务端可能会发送RST信号来关闭连接。
+
+**向收到RST的套接字写入内容会收到 SIGPIPE信号，写操作返回 EPIPE错误**
+
+```c
+signal(SIGPIPE, SIG_IGN);//忽略SIGPIPE
+```
+
