@@ -254,3 +254,19 @@ while((pid=waitpid(-1 , &stat , WNOHANG))> 0 ){
 signal(SIGPIPE, SIG_IGN);//忽略SIGPIPE
 ```
 
+## select  <sys/types.h>
+
+`select(最大符+1,&readset,&writeset,&exceptset,const struct timeval *timeout)`-> 就绪数，0超时，-1被信号中断
+
+### 就绪条件
+
+1. 可读： 读缓冲区数据多于接收区缓冲区低水位标记的当前大小；收到FIN，操作套接字返回0；监听套接字且已完成连接数>0;套接字错误，操作返回-1
+
+2. 可写：写缓冲区数据多于接收区缓冲区低水位标记的当前大小；套接字关闭，操作产生SIGPIPE；非阻塞connect成功或失败；套接字错误，操作返回-1
+
+   
+
+   
+
+
+
